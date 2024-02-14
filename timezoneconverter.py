@@ -1,9 +1,24 @@
 import sys
 import pendulum
-from PyQt6.QtWidgets import QApplication, QMainWindow, QToolBar, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QStackedWidget, QLabel, QSizePolicy, QComboBox
+from PyQt6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QToolBar,
+    QPushButton,
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
+    QStackedWidget,
+    QLabel,
+    QSizePolicy,
+    QComboBox,
+    QFormLayout,
+    QLineEdit
+)
 from PyQt6.QtCore import Qt, QTimer, QSize
 from PyQt6.QtGui import QIcon
-WINDOW_SIZE = 500
+WINDOW_WIDTH = 500
+WINDOW_HEIGHT = 300
 
 class Window(QMainWindow):
     def __init__(self):
@@ -12,8 +27,8 @@ class Window(QMainWindow):
 
     def initializeUI(self):
         # List of timezones
-        file_name = 'timezones_utc.txt'
-        with open(file_name, 'r') as file:
+        file_utc = 'timezones_utc.txt'
+        with open(file_utc, 'r') as file:
             timezone_list = file.readlines()
         
         # Set Application Title
@@ -64,7 +79,7 @@ class Window(QMainWindow):
         exit_button.clicked.connect(self.close)
         toolbar.addWidget(exit_button)
         
-        # Add stretchable space on the right
+        # Add spacing to toolbar so buttons aren't aligned to left
         right_spacer = QWidget()
         right_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         toolbar.addWidget(right_spacer)
@@ -93,6 +108,7 @@ class Window(QMainWindow):
         self.view_timezones_window = QWidget(self)
         self.view_timezones_window.setStyleSheet('background-color: rgb(180, 180, 180); border-radius: 5px;')
         self.view_timezones_window_layout = QVBoxLayout(self.view_timezones_window)
+        self.view_timezones_window_layout.setSpacing(20)
         
         self.view_timezones_title_label = QLabel('<h1>View Timezones</h1>', alignment=Qt.AlignmentFlag.AlignCenter)
         self.view_timezones_window_layout.addWidget(self.view_timezones_title_label)
@@ -100,7 +116,7 @@ class Window(QMainWindow):
         chose_timezone_layout = QHBoxLayout()
         chose_timezone_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        choose_timezone_label = QLabel('<h4>Choose Timezone:</h4>')
+        choose_timezone_label = QLabel('<h3>Choose Timezone:</h3>')
         chose_timezone_layout.addWidget(choose_timezone_label)
         
         self.timezone_combobox = QComboBox()
@@ -113,10 +129,10 @@ class Window(QMainWindow):
         
         self.view_timezones_window_layout.addLayout(chose_timezone_layout)
         
-        self.timezones_current_time_label = QLabel("<h4>Current Local Time: </h4>", alignment=Qt.AlignmentFlag.AlignCenter)
+        self.timezones_current_time_label = QLabel("<h3>Current Local Time: </h3>", alignment=Qt.AlignmentFlag.AlignCenter)
         self.view_timezones_window_layout.addWidget(self.timezones_current_time_label)
         
-        self.timezones_selected_time_label = QLabel("<h4>Local Time in </h4>", alignment=Qt.AlignmentFlag.AlignCenter)
+        self.timezones_selected_time_label = QLabel("<h3>Local Time in </h3>", alignment=Qt.AlignmentFlag.AlignCenter)
         self.view_timezones_window_layout.addWidget(self.timezones_selected_time_label)
         
         self.view_timezones_window_layout.addStretch()
@@ -130,43 +146,58 @@ class Window(QMainWindow):
         self.plan_trip_title_label = QLabel('<h1>Plan Trip</h1>', alignment=Qt.AlignmentFlag.AlignCenter)
         self.plan_trip_window_layout.addWidget(self.plan_trip_title_label)
         
-            # Start Timezone
-        trip_start_timezone_layout = QHBoxLayout()
-        trip_start_timezone_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.trip_layout = QFormLayout()
+        self.trip_layout.setSpacing(20)
         
-        trip_start_timezone_label = QLabel("<h4>Start Timezone:</h4>")
-        trip_start_timezone_layout.addWidget(trip_start_timezone_label)
-        
+        self.trip_start_timezone_label = QLabel("<h4>Start Timezone:</h4>")
         self.trip_start_timezone_combobox = QComboBox()
         self.trip_start_timezone_combobox.setStyleSheet('background-color: white;')
+        self.trip_start_timezone_combobox.setMaximumWidth(100)
         
         for tz in timezone_list:
             self.trip_start_timezone_combobox.addItem(tz)
-            
-        trip_start_timezone_layout.addWidget(self.trip_start_timezone_combobox)
-        self.plan_trip_window_layout.addLayout(trip_start_timezone_layout)
-            # Start Time
-        trip_start_time_layout = QHBoxLayout()
-        trip_start_time_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-            # End Timezone
-        trip_end_layout = QHBoxLayout()
-        trip_end_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        trip_end_label = QLabel("<h4>Destination Timezone:</h4>")
-        trip_end_layout.addWidget(trip_end_label)
-        
-        self.trip_end_combobox = QComboBox()
-        self.trip_end_combobox.setStyleSheet('background-color: white;')
+        self.trip_end_timezone_label = QLabel("<h4>Destination Timezone:</h4>")
+        self.trip_end_timezone_combobox = QComboBox()
+        self.trip_end_timezone_combobox.setStyleSheet('background-color: white;')
+        self.trip_end_timezone_combobox.setMaximumWidth(100)
         
         for tz in timezone_list:
-            self.trip_end_combobox.addItem(tz)
-            
-        trip_end_layout.addWidget(self.trip_end_combobox)
-        self.plan_trip_window_layout.addLayout(trip_end_layout)
-        # Trip Duration
+            self.trip_end_timezone_combobox.addItem(tz)
         
-        # Local Time at Arrival
+            # Start/End Time        
+        self.start_time_line_edit = QLineEdit()
+        self.start_time_line_edit.setStyleSheet('background-color: white;')
+        self.start_time_line_edit.setMaximumWidth(100)
+        
+        self.duration_line_edit = QLineEdit()
+        self.duration_line_edit.setStyleSheet('background-color: white;')
+        self.duration_line_edit.setMaximumWidth(100)
+        
+        self.arrival_time_label = QLabel("<h4>Arrival Time: </h4>")
+        self.arrival_time_button = QPushButton("Calculate Time")
+        self.arrival_time_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+            QPushButton:pressed {
+                background-color: rgb(230, 230, 230);
+            }
+        """)
+        self.arrival_time_button.setMaximumWidth(100)
+        self.arrival_time_button.clicked.connect(self.update_arrival_time)
+        
+        self.trip_layout.addRow(self.trip_start_timezone_label, self.trip_start_timezone_combobox)
+        self.trip_layout.addRow(self.trip_end_timezone_label, self.trip_end_timezone_combobox)
+        self.trip_layout.addRow("<h4>Start Time (hh:mm AM/PM):</h4>", self.start_time_line_edit)
+        self.trip_layout.addRow("<h4>Trip Duration (In hours):</h4>", self.duration_line_edit)
+        self.trip_layout.addRow(self.arrival_time_label, self.arrival_time_button)
+        
+        self.plan_trip_window_layout.addLayout(self.trip_layout)
+        
+            # Local Time at Arrival
         
         self.plan_trip_window_layout.addStretch()
         self.stacked_widget.addWidget(self.plan_trip_window)
@@ -205,7 +236,7 @@ class Window(QMainWindow):
         
     def update_current_time(self):
         # Get the current time using pendulum
-        current_time = pendulum.now().format("HH:mm A")
+        current_time = pendulum.now().format("h:mm A")
         
         # Get the current local timezone using pendulum
         local_timezone = pendulum.now().timezone.name
@@ -215,22 +246,39 @@ class Window(QMainWindow):
         
         # Update the current timezone labels
         self.home_current_timezone_label.setText(f"<h3>Current Timezone: {local_timezone}</h3>")
-        self.timezones_current_time_label.setText(f"<h4>Current Local Time: {current_time}</h4>")
+        self.timezones_current_time_label.setText(f"<h3>Current Local Time: {current_time}</h3>")
         
     def update_selected_timezone(self):
-        file_name = 'timezones_names.txt'
-        with open(file_name, 'r') as file:
+        file_names = 'timezones_names.txt'
+        with open(file_names, 'r') as file:
             timezone_names = file.readlines()
-            
         selected_index = self.timezone_combobox.currentIndex()
         selected_timezone = timezone_names[selected_index].strip()
-        current_local_time = pendulum.now(selected_timezone).format("HH:mm A")
-        self.timezones_selected_time_label.setText(f"<h4>Local Time in {selected_timezone}: {current_local_time}</h4>")
+        current_local_time = pendulum.now(selected_timezone).format("h:mm A")
+        self.timezones_selected_time_label.setText(f"<h3>Local Time in {selected_timezone}: {current_local_time}</h3>")
+        
+    def update_arrival_time(self):
+        file_names = 'timezones_names.txt'
+        with open(file_names, 'r') as file:
+            timezone_names = file.readlines()
+        start_time_string = self.start_time_line_edit.text()
+        start_timezone_index = self.trip_start_timezone_combobox.currentIndex()
+        start_timezone = timezone_names[start_timezone_index].strip()
+        duration_string = self.duration_line_edit.text()
+        end_timezone_index = self.trip_end_timezone_combobox.currentIndex()
+        end_timezone = timezone_names[end_timezone_index].strip()
+        
+        start_time = pendulum.from_format(f"{start_time_string}", "h:mm A", tz=start_timezone)
+
+        end_time = start_time.add(hours=int(duration_string)).in_tz(end_timezone)
+
+        end_time_formatted = end_time.format("h:mm A")
+
+        self.arrival_time_label.setText(f"<h4>Arrival Time: {end_time_formatted}</h4>")
 
 if __name__ == '__main__':
     app = QApplication([])
     main_window = Window()
-    main_window.setFixedSize(WINDOW_SIZE, WINDOW_SIZE)
+    main_window.setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT)
     main_window.show()
     sys.exit(app.exec())
-    
