@@ -27,7 +27,7 @@ class Window(QMainWindow):
 
     def initializeUI(self):
         # List of timezones
-        file_utc = 'timezones_utc.txt'
+        file_utc = 'Text_Files/timezones_utc.txt'
         with open(file_utc, 'r') as file:
             timezone_list = file.readlines()
         
@@ -249,7 +249,7 @@ class Window(QMainWindow):
         self.timezones_current_time_label.setText(f"<h3>Current Local Time: {current_time}</h3>")
         
     def update_selected_timezone(self):
-        file_names = 'timezones_names.txt'
+        file_names = 'Text_Files/timezones_names.txt'
         with open(file_names, 'r') as file:
             timezone_names = file.readlines()
         selected_index = self.timezone_combobox.currentIndex()
@@ -258,7 +258,7 @@ class Window(QMainWindow):
         self.timezones_selected_time_label.setText(f"<h3>Local Time in {selected_timezone}: {current_local_time}</h3>")
         
     def update_arrival_time(self):
-        file_names = 'timezones_names.txt'
+        file_names = 'Text_Files/timezones_names.txt'
         with open(file_names, 'r') as file:
             timezone_names = file.readlines()
         start_time_string = self.start_time_line_edit.text()
