@@ -270,7 +270,7 @@ class Window(QMainWindow):
         
         start_time = pendulum.from_format(f"{start_time_string}", "h:mm A", tz=start_timezone)
 
-        end_time = start_time.add(hours=int(duration_string)).in_tz(end_timezone)
+        end_time = start_time.add(hours=float(duration_string)).in_tz(end_timezone)
 
         end_time_formatted = end_time.format("h:mm A")
 
